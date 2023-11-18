@@ -33,6 +33,8 @@ export const getTokenAddressesByNetwork = (network: string) => {
       return ADDRESSES.MANTLE_TESTNET;
     case NETWORKS.POLYGON_ZKEVM_TESTNET:
       return ADDRESSES.POLYGON_ZKEVM_TESTNET;
+    case NETWORKS.MANTLE:
+      return ADDRESSES.MANTLE;
     default:
       throw new Error(`Unknown network: ${network}`);
   }
