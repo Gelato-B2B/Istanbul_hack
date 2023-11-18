@@ -5,8 +5,11 @@ export const SYMBOLS = {
 };
 
 export const ADDRESSES = {
+  GNOSIS: new Map([
+    [SYMBOLS.USDC, "0xDDAfbb505ad214D7b80b1f830fcCc89B60fb7A83"],
+  ]),
   GNOSIS_CHIADO_TESTNET: new Map([
-      [SYMBOLS.USDC, "0xe2c6b1E40907973637C1fCe6caf848DC275596d4"],
+    [SYMBOLS.USDC, "0xDDAfbb505ad214D7b80b1f830fcCc89B60fb7A83"],
   ]),
   MANTLE_TESTNET: new Map([
     // TODO: not really sure if this is the right address
@@ -16,6 +19,8 @@ export const ADDRESSES = {
 
 export const getTokenAddressesByNetwork = (network: string) => {
   switch (network) {
+    case NETWORKS.GNOSIS:
+      return ADDRESSES.GNOSIS;
     case NETWORKS.GNOSIS_CHIADO:
       return ADDRESSES.GNOSIS_CHIADO_TESTNET;
     case NETWORKS.MANTLE_TESTNET:
