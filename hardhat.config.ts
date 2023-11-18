@@ -1,5 +1,6 @@
 import '@nomiclabs/hardhat-etherscan'
 import '@nomiclabs/hardhat-waffle'
+import "hardhat-deploy";
 import {config as dotEnvConfig} from 'dotenv'
 
 import 'hardhat-typechain'
@@ -32,6 +33,14 @@ const config: HardhatUserConfig = {
                 }
             },
         ]
+    },
+    namedAccounts: {
+        deployer: {
+            default: 0,
+        },
+    },
+    paths: {
+        deploy: "scripts",
     },
     networks: {
         hardhat: {
