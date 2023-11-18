@@ -16,7 +16,7 @@ contract Liquorice {
         uint256 interestRate;
         uint256 capital; //in ETH
         uint256 loanDuration;
-        uint256 punishmentFee;
+        uint256 liquidationThreshold;
         uint256 collateralRatio;
         address[] whitelist;
         address owner;
@@ -88,13 +88,13 @@ contract Liquorice {
         uint256 _interestRate,
         uint256 _capital,
         uint256 _loanDuration,
-        uint256 _punishmentFee,
+        uint256 _liquidationThreshold,
         uint256 _collateralRatio,
         address[] memory _whitelist
     ) external payable {
 
         require(msg.value >= _capital, "Not enough ETH provided");
-        require(_punishmentFee <= 100, "Punishment fee cannot exceed 100.");
+        require(_liquidationThreshold <= 100, "Punishment fee cannot exceed 100.");
         require(_collateralRatio <= 100, "Collateral ratio must be below 100.");
         require(_collateralRatio >= 1, "Collateral ratio must be higher than 1.");
 
@@ -102,7 +102,7 @@ contract Liquorice {
             interestRate: _interestRate,
             capital: _capital,
             loanDuration: _loanDuration,
-            punishmentFee: _punishmentFee,
+            liquidationThreshold: _liquidationThreshold,
             collateralRatio: _collateralRatio,
             whitelist: _whitelist,
             owner: msg.sender
@@ -164,7 +164,7 @@ contract Liquorice {
         liquidationMarkets[nextMarket].borrowedETH = _order.amountIn;
         liquidationMarkets[nextMarket].lockedColalteral = _collalteral;
         liquidationMarkets[nextMarket].loanDuration = lendingPools[_poolID].loanDuration;
-        liquidationMarkets[nextMarket].liquidationPrice = getEthUsdPrice() * lendingPools[_poolID].collateralRatio / 100;
+        liquidationMarkets[nextMarket].liquidationPrice = getEthUsdPrice() * lendingPools[_poolID].liquidationThreshold / 100;
 
         poolBorrowers[_order.maker].lockedCollateral += _collalteral;
         nextMarket++;
