@@ -1,11 +1,7 @@
 {
-    "name": "fusion-resolver-example",
+    "name": "liquorice-istanbul",
     "version": "0.0.1",
-    "description": "Fusion Order Example",
-    "repository": {
-        "type": "git",
-        "url": "git@github.com:1inch/fusion-resolver-example.git"
-    },
+    "description": "Liquorice Istanbul Hack",
     "license": "MIT",
     "scripts": {
         "clean": "rimraf artifacts cache coverage contracts/hardhat-dependency-compiler",

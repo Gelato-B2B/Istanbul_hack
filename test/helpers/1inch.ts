@@ -9,20 +9,29 @@ export class OneInchApi {
     constructor(private readonly config: OneInchApiConfig) {}
 
     async requestSwapData(
-        params: OneInchSwapParams
+        swapParams: OneInchSwapParams
     ): Promise<OneInchApiSwapResponse> {
-        const req =
-            `${this.config.url}/v5.0/${this.config.network}` +
-            `/swap?fromTokenAddress=${params.fromToken}&toTokenAddress=${params.toToken}` +
-            `&amount=${params.amount}&fromAddress=${params.fromAddress}` +
-            `&slippage=${params.slippage}` +
-            `${
-                params.protocols
-                    ? '&protocols=' + params.protocols.join(',')
+        const url = `${this.config.url}/swap/v5.2/${this.config.network}/swap`;
+        // @ts-ignore
+        const config = {
+            /*headers: {
+                "Authorization": `Bearer 0H94bERbr7cACr1BrJ091rpSE8ArV18Y`
+            },*/
+            params: {
+                "src": swapParams.src,
+                "dst": swapParams.dst,
+                "amount": swapParams.amount,
+                "from": swapParams.from,
+                "slippage": swapParams.slippage,
+                "protocols": (
+                    swapParams.protocols
+                    ? swapParams.protocols.join(',')
                     : ''
-            }` +
-            `&disableEstimate=${!!params.disableEstimate}`
+                ),
+                "disableEstimate": !!swapParams.disableEstimate
+            }
+        };
 
-        return axios.get(req).then((x) => x.data)
+        return axios.get(url, config).then((response) => response.data)
     }
 }

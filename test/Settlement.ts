@@ -90,15 +90,15 @@ describe('Settle Orders', function () {
         })
 
         const oneInchApi = new OneInchApi({
-            url: 'https://api.1inch.io',
+            url: 'https://api.1inch.dev',
             network: NetworkEnum.ETHEREUM
         })
 
         const {tx} = await oneInchApi.requestSwapData({
-            fromToken: TOKENS.WETH,
-            toToken: TOKENS.USDC,
+            src: TOKENS.WETH,
+            dst: TOKENS.USDC,
             amount: orderA.makingAmount,
-            fromAddress: resolverContract.address,
+            from: resolverContract.address,
             disableEstimate: true,
             slippage: 1,
             protocols: ['UNISWAP_V2']

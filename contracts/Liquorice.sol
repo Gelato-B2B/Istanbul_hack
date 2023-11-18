@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: GPL-3.0
 
-pragma solidity ^0.8.18;
+pragma solidity ^0.8.17;
 
 interface IERC20 {
     function transferFrom(address sender, address recipient, uint256 amount) external returns (bool);
@@ -32,29 +32,29 @@ contract Liquorice {
         uint256 amountOut;
         uint256 validTo;
         address maker;
-        bytes uid; 
-    }     
+        bytes uid;
+    }
 
     struct liquidationMarket {
         address lender;
-        address borrower; 
+        address borrower;
         uint256 borrowedETH;
-        uint256 lockedColalteral;       
+        uint256 lockedColalteral;
     }
 
     address constant lockUSDC = 0x2791Bca1f2de4661ED88A30C99A7a9449Aa84174;
 
     mapping(uint256 => LendingPool) public lendingPools;
     mapping(address => borrowers) public poolBorrowers;
-    mapping(bytes32 => bool) public invalidatedOrders;    
+    mapping(bytes32 => bool) public invalidatedOrders;
 
     uint256 public nextPoolId;
 
-    bytes32 immutable DOMAIN_SEPARATOR; 
+    bytes32 immutable DOMAIN_SEPARATOR;
 
     bytes32 constant EIP712DOMAIN_TYPEHASH = keccak256(
         "EIP712Domain(string name,string version,uint256 chainId,address verifyingContract)"
-    ); 
+    );
 
     bytes32 constant ORDER_TYPEHASH = keccak256(
         "Order(uint256 amountIn,uint256 amountOut,address maker,bytes uid)"
@@ -70,7 +70,7 @@ contract Liquorice {
                 address(this)
             )
         );
-    }    
+    }
 
 
 
@@ -134,9 +134,9 @@ contract Liquorice {
     function settlement(Order memory _order, bytes memory _signature, uint256 _poolID) external payable {
         //Checks
         bytes32 orderhash = _hashOrder(_order);
-        address recsigner = recoverSigner(orderhash, _signature);          
-        require(recsigner == _order.maker, "Ivalid signature");  
-        require(poolBorrowers[_order.maker].collateral - poolBorrowers[_order.maker].lockedCollateral >= 
+        address recsigner = recoverSigner(orderhash, _signature);
+        require(recsigner == _order.maker, "Ivalid signature");
+        require(poolBorrowers[_order.maker].collateral - poolBorrowers[_order.maker].lockedCollateral >=
         _order.amountOut * lendingPools[_poolID].collateralRatio / 100, "Not enough collateral");
 
         //Invalidating the quote
@@ -162,7 +162,7 @@ contract Liquorice {
 
     function repay() internal {
 
-    }    
+    }
 
 //----------------------------------------------------------------------------------------------------
 //------Supplimentary functions-----------------------------------------------------------------------
@@ -171,14 +171,14 @@ contract Liquorice {
     function _invalidateOrder(bytes32 _hash) internal {
         require(!invalidatedOrders[_hash], "Invalid Order");
         invalidatedOrders[_hash] = true;
-    }           
-    
+    }
+
    //hashes order data
     function _hashOrder(Order memory _order) public pure returns (bytes32) {
         return keccak256(abi.encode(
             ORDER_TYPEHASH,
             _order.amountIn,
-            _order.amountOut,            
+            _order.amountOut,
             _order.maker,
             _order.uid
         ));
@@ -200,7 +200,7 @@ contract Liquorice {
     //view function that can be called by test maker to generate hash that maker has to sign
     function generateEIP712Hash(Order memory _order) public view returns (bytes32) {
         return getEthSignedMessageHash(_hashOrder(_order));
-    } 
+    }
 
     function recoverSigner(
         bytes32 _hash,
@@ -222,8 +222,8 @@ contract Liquorice {
         }
 
         return ecrecover(messageHash, v, r, s);
-    }  
-    
+    }
+
     function getEthUsdPrice() internal view returns(uint256) {
         // mainnet
         // address source = 0x5f4eC3Df9cbd43714FE2740f5E3616155c5b8419;
@@ -237,7 +237,7 @@ contract Liquorice {
         IChainlinkAggregator ethUsdPriceFeed = IChainlinkAggregator(source);
         int256 ethUsdPrice = ethUsdPriceFeed.latestAnswer();
         return uint256(ethUsdPrice);
-    }         
+    }
 
     receive() external payable {}
 
