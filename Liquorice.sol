@@ -6,6 +6,10 @@ interface IERC20 {
     function transferFrom(address sender, address recipient, uint256 amount) external returns (bool);
 }
 
+interface IChainlinkAggregator {
+    function latestAnswer() external view returns (int256);
+}
+
 contract Liquorice {
 
     struct LendingPool {
@@ -27,7 +31,7 @@ contract Liquorice {
         uint256 amountIn;
         uint256 amountOut;
         uint256 validTo;
-        address taker;
+        address maker;
         bytes uid; 
     }     
 
@@ -53,7 +57,7 @@ contract Liquorice {
     ); 
 
     bytes32 constant ORDER_TYPEHASH = keccak256(
-        "Order(uint256 amountIn,uint256 amountOut,address taker,bytes uid)"
+        "Order(uint256 amountIn,uint256 amountOut,address maker,bytes uid)"
     );
 
     constructor() {
@@ -68,9 +72,13 @@ contract Liquorice {
         );
     }    
 
-    //---------------------------------------------------------------------------------------
-    //------Main functions----------------------------------------------------------
-    //---------------------------------------------------------------------------------------
+
+
+
+
+//-----------------------------------------------------------------------------------------------------
+//------Main functions---------------------------------------------------------------------------------
+//-----------------------------------------------------------------------------------------------------
 
     function createLendingPool(
         uint256 _interestRate,
@@ -123,28 +131,36 @@ contract Liquorice {
         require(usdcToken.transferFrom(address(this), msg.sender, amount), "Transfer failed.");
     }
 
-    function settlement(Order memory _order, bytes memory _signature) external payable {
+    function settlement(Order memory _order, bytes memory _signature, uint256 _poolID) external payable {
+        //Checks
         bytes32 orderhash = _hashOrder(_order);
         address recsigner = recoverSigner(orderhash, _signature);          
-        require(recsigner == _order.taker, "Ivalid signature");  
+        require(recsigner == _order.maker, "Ivalid signature");  
+        require(poolBorrowers[_order.maker].collateral - poolBorrowers[_order.maker].lockedCollateral >= 
+        _order.amountOut * lendingPools[_poolID].collateralRatio / 100, "Not enough collateral");
 
-        //Checking that quote is not reused
+        //Invalidating the quote
         _invalidateOrder(orderhash);
 
-        // swap
+        //Recording borrowing
 
+
+        // swap
         payable(msg.sender).transfer(_order.amountIn);
         IERC20 usdcToken = IERC20(lockUSDC);
         require(usdcToken.transferFrom(msg.sender, address(this), _order.amountOut), "Transfer failed.");
     }
 
 
+    function recordBorrowing() internal {
 
-    //---------------------------------------------------------------------------------------
-    //------Supplimentary functions----------------------------------------------------------
-    //---------------------------------------------------------------------------------------
+    }
 
 
+
+//----------------------------------------------------------------------------------------------------
+//------Supplimentary functions-----------------------------------------------------------------------
+//----------------------------------------------------------------------------------------------------
 
     function _invalidateOrder(bytes32 _hash) internal {
         require(!invalidatedOrders[_hash], "Invalid Order");
@@ -157,7 +173,7 @@ contract Liquorice {
             ORDER_TYPEHASH,
             _order.amountIn,
             _order.amountOut,            
-            _order.taker,
+            _order.maker,
             _order.uid
         ));
     }
@@ -200,7 +216,22 @@ contract Liquorice {
         }
 
         return ecrecover(messageHash, v, r, s);
-    }       
+    }  
+    
+    function getEthUsdPrice() internal view returns(uint256) {
+        // mainnet
+        // address source = 0x5f4eC3Df9cbd43714FE2740f5E3616155c5b8419;
+
+        // sepoila
+        // address source = 0x694AA1769357215DE4FAC081bf1f309aDC325306;
+
+        // goerli
+        address source = 0xD4a33860578De61DBAbDc8BFdb98FD742fA7028e;
+
+        IChainlinkAggregator ethUsdPriceFeed = IChainlinkAggregator(source);
+        int256 ethUsdPrice = ethUsdPriceFeed.latestAnswer();
+        return uint256(ethUsdPrice);
+    }         
 
     receive() external payable {}
 
