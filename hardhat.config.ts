@@ -53,8 +53,12 @@ const config: HardhatUserConfig = {
             chainId: 1
         },
         localhost: {},
+        mantle: {
+            url: "https://rpc.mantle.xyz",
+            accounts: [PK],
+        },
         mantleTestnet: {
-            url: "https://rpc.testnet.mantle.xyz", // testnet
+            url: "https://rpc.testnet.mantle.xyz",
             accounts: [PK]
         },
         chiado: {

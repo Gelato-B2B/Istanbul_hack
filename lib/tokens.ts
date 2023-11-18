@@ -11,6 +11,9 @@ export const ADDRESSES = {
   GNOSIS_CHIADO_TESTNET: new Map([
     [SYMBOLS.USDC, "0xDDAfbb505ad214D7b80b1f830fcCc89B60fb7A83"],
   ]),
+  MANTLE: new Map([
+    [SYMBOLS.USDC, "0x09Bc4E0D864854c6aFB6eB9A9cdF58aC190D0dF9"],
+  ]),
   MANTLE_TESTNET: new Map([
     // TODO: not really sure if this is the right address
     [SYMBOLS.USDC, "0x9c873d9A44013D1aa2605f2bE61F6209980174f6"],
