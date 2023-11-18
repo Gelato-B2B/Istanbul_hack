@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: GPL-3.0
 
-pragma solidity ^0.8.18;
+pragma solidity 0.8.17;
 
 interface IERC20 {
     function transferFrom(address sender, address recipient, uint256 amount) external returns (bool);
@@ -32,15 +32,15 @@ contract intentBoost {
         uint256 amountOut;
         uint256 validTo;
         address maker;
-        bytes uid; 
-    }     
+        bytes uid;
+    }
 
     struct liquidationMarket {
         address lender;
-        address borrower; 
+        address borrower;
         uint256 borrowedETH;
-        uint256 lockedColalteral;  
-        uint256 loanDuration;     
+        uint256 lockedColalteral;
+        uint256 loanDuration;
         uint256 liquidationPrice;
     }
 
@@ -48,17 +48,17 @@ contract intentBoost {
 
     mapping(uint256 => LendingPool) public lendingPools;
     mapping(address => borrowers) public poolBorrowers;
-    mapping(bytes32 => bool) public invalidatedOrders;    
+    mapping(bytes32 => bool) public invalidatedOrders;
     mapping(uint256 => liquidationMarket) public liquidationMarkets;
 
     uint256 public nextPoolId;
     uint256 public nextMarket;
 
-    bytes32 immutable DOMAIN_SEPARATOR; 
+    bytes32 immutable DOMAIN_SEPARATOR;
 
     bytes32 constant EIP712DOMAIN_TYPEHASH = keccak256(
         "EIP712Domain(string name,string version,uint256 chainId,address verifyingContract)"
-    ); 
+    );
 
     bytes32 constant ORDER_TYPEHASH = keccak256(
         "Order(uint256 amountIn,uint256 amountOut,address maker,bytes uid)"
@@ -74,7 +74,7 @@ contract intentBoost {
                 address(this)
             )
         );
-    }    
+    }
 
 
 
@@ -139,10 +139,10 @@ contract intentBoost {
     function settlement(Order memory _order, bytes memory _signature, uint256 _poolID) external payable {
         //Checks
         bytes32 orderhash = _hashOrder(_order);
-        address recsigner = recoverSigner(orderhash, _signature);          
-        require(recsigner == _order.maker, "Ivalid signature");  
+        address recsigner = recoverSigner(orderhash, _signature);
+        require(recsigner == _order.maker, "Ivalid signature");
         uint256 collateral = _order.amountOut * lendingPools[_poolID].collateralRatio / 100;
-        require(poolBorrowers[_order.maker].collateral - poolBorrowers[_order.maker].lockedCollateral >= 
+        require(poolBorrowers[_order.maker].collateral - poolBorrowers[_order.maker].lockedCollateral >=
         collateral, "Not enough collateral");
 
         //Invalidating the quote
@@ -190,7 +190,7 @@ contract intentBoost {
         liquidationMarket storage market = liquidationMarkets[marketId];
         require(msg.sender == market.borrower, "Only the borrower can repay the loan");
 
-        uint256 totalDue = market.borrowedETH; 
+        uint256 totalDue = market.borrowedETH;
 
         require(msg.value >= totalDue, "Insufficient amount to cover the loan");
 
@@ -204,7 +204,7 @@ contract intentBoost {
 
         IERC20 usdcToken = IERC20(lockUSDC);
         require(usdcToken.transferFrom(address(this), msg.sender, market.lockedColalteral), "Collateral return failed");
-    }    
+    }
 
 
 
@@ -217,14 +217,14 @@ contract intentBoost {
     function _invalidateOrder(bytes32 _hash) internal {
         require(!invalidatedOrders[_hash], "Invalid Order");
         invalidatedOrders[_hash] = true;
-    }           
-    
+    }
+
    //hashes order data
     function _hashOrder(Order memory _order) public pure returns (bytes32) {
         return keccak256(abi.encode(
             ORDER_TYPEHASH,
             _order.amountIn,
-            _order.amountOut,            
+            _order.amountOut,
             _order.maker,
             _order.uid
         ));
@@ -246,7 +246,7 @@ contract intentBoost {
     //view function that can be called by test maker to generate hash that maker has to sign
     function generateEIP712Hash(Order memory _order) public view returns (bytes32) {
         return getEthSignedMessageHash(_hashOrder(_order));
-    } 
+    }
 
     function recoverSigner(
         bytes32 _hash,
@@ -268,8 +268,8 @@ contract intentBoost {
         }
 
         return ecrecover(messageHash, v, r, s);
-    }  
-    
+    }
+
     function getEthUsdPrice() internal view returns(uint256) {
         // mainnet
         // address source = 0x5f4eC3Df9cbd43714FE2740f5E3616155c5b8419;
@@ -283,7 +283,7 @@ contract intentBoost {
         IChainlinkAggregator ethUsdPriceFeed = IChainlinkAggregator(source);
         int256 ethUsdPrice = ethUsdPriceFeed.latestAnswer();
         return uint256(ethUsdPrice);
-    }         
+    }
 
     receive() external payable {}
 
