@@ -14,6 +14,7 @@ dotEnvConfig()
 
 const ALCHEMY_API_KEY = process.env.ALCHEMY_API_KEY || "";
 const INCH_BEARER = process.env.INCH_BEARER || "";
+const PK = process.env.PRIVATE_KEY || "";
 
 axios.defaults.headers.common = {
     'Authorization': `Bearer ${INCH_BEARER}`
@@ -51,7 +52,11 @@ const config: HardhatUserConfig = {
             },
             chainId: 1
         },
-        localhost: {}
+        localhost: {},
+        mantleTest: {
+            url: "https://rpc.testnet.mantle.xyz", // testnet
+            accounts: [PK]
+        }
     }
 }
 
