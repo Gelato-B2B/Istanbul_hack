@@ -46,7 +46,7 @@ contract intentBoost is Ownable {
         uint256 liquidationPrice;
     }
 
-    address  lockUSDC;
+    address public lockUSDC;
 
     mapping(uint256 => LendingPool) public lendingPools;
     mapping(address => borrowers) public poolBorrowers;
@@ -84,6 +84,10 @@ contract intentBoost is Ownable {
 //-----------------------------------------------------------------------------------------------------
     function setPaused(bool _paused) external onlyOwner {
         paused = _paused;
+    }
+
+    function setUSDCAddress(address _usdcAddress) external onlyOwner {
+        lockUSDC = _usdcAddress;
     }
 
 //-----------------------------------------------------------------------------------------------------
