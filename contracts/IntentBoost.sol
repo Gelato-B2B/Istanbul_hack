@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: GPL-3.0
 
 pragma solidity 0.8.17;
+import "@openzeppelin/contracts/access/Ownable.sol";
 
 interface IERC20 {
     function transferFrom(address sender, address recipient, uint256 amount) external returns (bool);
@@ -10,7 +11,8 @@ interface IChainlinkAggregator {
     function latestAnswer() external view returns (int256);
 }
 
-contract intentBoost {
+contract intentBoost is Ownable {
+    bool public paused;
 
     struct LendingPool {
         uint256 interestRate;
@@ -76,9 +78,12 @@ contract intentBoost {
         );
     }
 
-
-
-
+//-----------------------------------------------------------------------------------------------------
+//------Owner functions---------------------------------------------------------------------------------
+//-----------------------------------------------------------------------------------------------------
+    function setPaused(bool _paused) external onlyOwner {
+        paused = _paused;
+    }
 
 //-----------------------------------------------------------------------------------------------------
 //------Main functions---------------------------------------------------------------------------------
@@ -92,7 +97,7 @@ contract intentBoost {
         uint256 _collateralRatio,
         address[] memory _whitelist
     ) external payable {
-
+        require(!paused, "Contract is paused");
         require(msg.value >= _capital, "Not enough ETH provided");
         require(_liquidationThreshold <= 100, "Punishment fee cannot exceed 100.");
         require(_collateralRatio <= 100, "Collateral ratio must be below 100.");
@@ -113,6 +118,7 @@ contract intentBoost {
     }
 
     function withdrawCapital(uint256 poolId, uint256 withdrawAmount) external {
+        require(!paused, "Contract is paused");
         LendingPool storage pool = lendingPools[poolId];
         require(msg.sender == pool.owner, "Only the pool owner can withdraw capital.");
         require(withdrawAmount <= pool.capital, "Withdrawl request exceeds pool amount.");
@@ -121,6 +127,7 @@ contract intentBoost {
     }
 
     function depositCollateral(uint256 amount) public {
+        require(!paused, "Contract is paused");
         require(amount > 0, "Amount must be greater than 0");
         IERC20 usdcToken = IERC20(lockUSDC);
         require(usdcToken.transferFrom(msg.sender, address(this), amount), "Transfer failed.");
@@ -128,6 +135,7 @@ contract intentBoost {
     }
 
     function withdrawCollateral(uint256 amount) public {
+        require(!paused, "Contract is paused");
         require(amount > 0, "amount needs to be higher than zero");
         require(poolBorrowers[msg.sender].collateral - poolBorrowers[msg.sender].lockedCollateral > amount, "Not enough available collateral");
         poolBorrowers[msg.sender].collateral -= amount;
