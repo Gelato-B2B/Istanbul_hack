@@ -15,4 +15,3 @@ coverage.json
 .env
 
 typechain
-deployments
