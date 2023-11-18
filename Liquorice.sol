@@ -6,6 +6,10 @@ interface IERC20 {
     function transferFrom(address sender, address recipient, uint256 amount) external returns (bool);
 }
 
+interface IChainlinkAggregator {
+    function latestAnswer() external view returns (int256);
+}
+
 contract Liquorice {
 
     struct LendingPool {
@@ -200,7 +204,22 @@ contract Liquorice {
         }
 
         return ecrecover(messageHash, v, r, s);
-    }       
+    }
+
+    function getEthUsdPrice() internal view returns(uint256) {
+        // mainnet
+        // address source = 0x5f4eC3Df9cbd43714FE2740f5E3616155c5b8419;
+
+        // sepoila
+        // address source = 0x694AA1769357215DE4FAC081bf1f309aDC325306;
+
+        // goerli
+        address source = 0xD4a33860578De61DBAbDc8BFdb98FD742fA7028e;
+
+        IChainlinkAggregator ethUsdPriceFeed = IChainlinkAggregator(source);
+        int256 ethUsdPrice = ethUsdPriceFeed.latestAnswer();
+        return uint256(ethUsdPrice);
+    }
 
     receive() external payable {}
 
