@@ -66,6 +66,10 @@ const config: HardhatUserConfig = {
             url: "https://rpc.gnosischain.com/",
             accounts: [PK],
         },
+        polygonZkEvmTestnet: {
+            url: `https://rpc.public.zkevm-test.net`,
+            accounts: [PK],
+        },
     },
 }
 
