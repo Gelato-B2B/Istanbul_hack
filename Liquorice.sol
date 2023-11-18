@@ -39,7 +39,9 @@ contract Liquorice {
         address lender;
         address borrower; 
         uint256 borrowedETH;
-        uint256 lockedColalteral;       
+        uint256 lockedColalteral;  
+        uint256 loanDuration;     
+        uint256 liquidationPrice;
     }
 
     address constant lockUSDC = 0x2791Bca1f2de4661ED88A30C99A7a9449Aa84174;
@@ -47,8 +49,10 @@ contract Liquorice {
     mapping(uint256 => LendingPool) public lendingPools;
     mapping(address => borrowers) public poolBorrowers;
     mapping(bytes32 => bool) public invalidatedOrders;    
+    mapping(uint256 => liquidationMarket) public liquidationMarkets;
 
     uint256 public nextPoolId;
+    uint256 public nextMarket;
 
     bytes32 immutable DOMAIN_SEPARATOR; 
 
@@ -131,38 +135,80 @@ contract Liquorice {
         require(usdcToken.transferFrom(address(this), msg.sender, amount), "Transfer failed.");
     }
 
+    //taker is calling the function
     function settlement(Order memory _order, bytes memory _signature, uint256 _poolID) external payable {
         //Checks
         bytes32 orderhash = _hashOrder(_order);
         address recsigner = recoverSigner(orderhash, _signature);          
         require(recsigner == _order.maker, "Ivalid signature");  
+        uint256 collateral = _order.amountOut * lendingPools[_poolID].collateralRatio / 100;
         require(poolBorrowers[_order.maker].collateral - poolBorrowers[_order.maker].lockedCollateral >= 
-        _order.amountOut * lendingPools[_poolID].collateralRatio / 100, "Not enough collateral");
+        collateral, "Not enough collateral");
 
         //Invalidating the quote
         _invalidateOrder(orderhash);
 
         //Recording borrowing
-
+        recordBorrowing(_order, collateral, _poolID);
 
         // swap
-        payable(msg.sender).transfer(_order.amountIn);
+        payable(msg.sender).transfer(_order.amountOut);
         IERC20 usdcToken = IERC20(lockUSDC);
-        require(usdcToken.transferFrom(msg.sender, address(this), _order.amountOut), "Transfer failed.");
+        require(usdcToken.transferFrom(msg.sender, address(this), _order.amountIn), "Transfer failed.");
     }
 
 
-    function recordBorrowing() internal {
+    function recordBorrowing(Order memory _order, uint256 _collalteral, uint256 _poolID) internal {
+        liquidationMarkets[nextMarket].lender = msg.sender;
+        liquidationMarkets[nextMarket].borrower = _order.maker;
+        liquidationMarkets[nextMarket].borrowedETH = _order.amountIn;
+        liquidationMarkets[nextMarket].lockedColalteral = _collalteral;
+        liquidationMarkets[nextMarket].loanDuration = lendingPools[_poolID].loanDuration;
+        liquidationMarkets[nextMarket].liquidationPrice = getEthUsdPrice() * lendingPools[_poolID].collateralRatio / 100;
 
+        poolBorrowers[_order.maker].lockedCollateral += _collalteral;
+        nextMarket++;
     }
 
-    function liquidate() internal {
-
+    function liquidate(uint256 _marketID) external {
+        require(msg.sender == liquidationMarkets[_marketID].lender, "Only lenders can liquidate");
+        if (block.timestamp > liquidationMarkets[_marketID].loanDuration) {
+            poolBorrowers[liquidationMarkets[_marketID].borrower].lockedCollateral -= liquidationMarkets[_marketID].lockedColalteral;
+            IERC20 usdcToken = IERC20(lockUSDC);
+            require(usdcToken.transferFrom(address(this), msg.sender, liquidationMarkets[nextMarket].lockedColalteral), "Transfer failed.");
+            delete liquidationMarkets[nextMarket];
+        }else {
+            require(getEthUsdPrice() < liquidationMarkets[nextMarket].liquidationPrice, "Liquidation threshold not breached");
+            poolBorrowers[liquidationMarkets[_marketID].borrower].lockedCollateral -= liquidationMarkets[_marketID].lockedColalteral;
+            IERC20 usdcToken = IERC20(lockUSDC);
+            require(usdcToken.transferFrom(address(this), msg.sender, liquidationMarkets[nextMarket].lockedColalteral), "Transfer failed.");
+            delete liquidationMarkets[nextMarket];
+        }
     }
 
-    function repay() internal {
+    function repay(uint256 marketId) external payable {
+        liquidationMarket storage market = liquidationMarkets[marketId];
+        require(msg.sender == market.borrower, "Only the borrower can repay the loan");
 
+        uint256 totalDue = market.borrowedETH; 
+
+        require(msg.value >= totalDue, "Insufficient amount to cover the loan");
+
+        if (msg.value > totalDue) {
+            payable(msg.sender).transfer(msg.value - totalDue);
+        }
+
+        borrowers storage borrower = poolBorrowers[market.borrower];
+        borrower.lockedCollateral -= market.lockedColalteral;
+        delete liquidationMarkets[marketId];
+
+        IERC20 usdcToken = IERC20(lockUSDC);
+        require(usdcToken.transferFrom(address(this), msg.sender, market.lockedColalteral), "Collateral return failed");
     }    
+
+
+
+
 
 //----------------------------------------------------------------------------------------------------
 //------Supplimentary functions-----------------------------------------------------------------------
