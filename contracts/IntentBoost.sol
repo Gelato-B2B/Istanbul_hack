@@ -46,7 +46,7 @@ contract intentBoost is Ownable {
         uint256 liquidationPrice;
     }
 
-    address constant lockUSDC = 0x2791Bca1f2de4661ED88A30C99A7a9449Aa84174;
+    address  lockUSDC;
 
     mapping(uint256 => LendingPool) public lendingPools;
     mapping(address => borrowers) public poolBorrowers;
@@ -66,7 +66,8 @@ contract intentBoost is Ownable {
         "Order(uint256 amountIn,uint256 amountOut,address maker,bytes uid)"
     );
 
-    constructor() {
+    constructor(address usdcAddress) {
+        lockUSDC = usdcAddress;
         DOMAIN_SEPARATOR = keccak256(
             abi.encode(
                 EIP712DOMAIN_TYPEHASH,
