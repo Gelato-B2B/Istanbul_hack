@@ -1,5 +1,6 @@
 import '@nomiclabs/hardhat-etherscan'
 import '@nomiclabs/hardhat-waffle'
+import "hardhat-deploy";
 import {config as dotEnvConfig} from 'dotenv'
 
 import 'hardhat-typechain'
@@ -13,6 +14,7 @@ dotEnvConfig()
 
 const ALCHEMY_API_KEY = process.env.ALCHEMY_API_KEY || "";
 const INCH_BEARER = process.env.INCH_BEARER || "";
+const PK = process.env.PRIVATE_KEY || "";
 
 axios.defaults.headers.common = {
     'Authorization': `Bearer ${INCH_BEARER}`
@@ -33,6 +35,14 @@ const config: HardhatUserConfig = {
             },
         ]
     },
+    namedAccounts: {
+        deployer: {
+            default: 0,
+        },
+    },
+    paths: {
+        deploy: "scripts",
+    },
     networks: {
         hardhat: {
             forking: {
@@ -42,8 +52,29 @@ const config: HardhatUserConfig = {
             },
             chainId: 1
         },
-        localhost: {}
-    }
+        localhost: {},
+        mantle: {
+            url: "https://rpc.mantle.xyz",
+            accounts: [PK],
+        },
+        mantleTestnet: {
+            url: "https://rpc.testnet.mantle.xyz",
+            accounts: [PK]
+        },
+        chiado: {
+            url: "https://rpc.chiadochain.net",
+            // gasPrice: 1000000000,
+            accounts: [PK],
+        },
+        gnosis: {
+            url: "https://rpc.gnosischain.com/",
+            accounts: [PK],
+        },
+        polygonZkEvmTestnet: {
+            url: `https://rpc.public.zkevm-test.net`,
+            accounts: [PK],
+        },
+    },
 }
 
-export default config
+export default config;
