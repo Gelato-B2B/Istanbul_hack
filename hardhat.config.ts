@@ -56,8 +56,13 @@ const config: HardhatUserConfig = {
         mantleTestnet: {
             url: "https://rpc.testnet.mantle.xyz", // testnet
             accounts: [PK]
-        }
-    }
+        },
+        chiado: {
+            url: "https://rpc.chiadochain.net",
+            // gasPrice: 1000000000,
+            accounts: [PK],
+        },
+    },
 }
 
-export default config
+export default config;
