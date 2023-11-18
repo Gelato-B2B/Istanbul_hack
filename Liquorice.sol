@@ -10,7 +10,7 @@ interface IChainlinkAggregator {
     function latestAnswer() external view returns (int256);
 }
 
-contract Liquorice {
+contract intentBoost {
 
     struct LendingPool {
         uint256 interestRate;
@@ -68,7 +68,7 @@ contract Liquorice {
         DOMAIN_SEPARATOR = keccak256(
             abi.encode(
                 EIP712DOMAIN_TYPEHASH,
-                keccak256("Liquorice"), // contract name
+                keccak256("intentBoost"), // contract name
                 keccak256("1"), // Version
                 block.chainid,
                 address(this)
