@@ -2,10 +2,10 @@ import {NetworkEnum} from '@1inch/fusion-sdk'
 import {ChainId} from '@1inch/permit-signed-approvals-utils'
 
 export type OneInchSwapParams = {
-    fromToken: string
-    toToken: string
+    src: string
+    dst: string
     amount: string
-    fromAddress: string
+    from: string
     slippage: number
     disableEstimate?: boolean
     protocols?: string[]
@@ -19,8 +19,7 @@ export type OneInchApiConfig = {
 export type OneInchApiSwapResponse = {
     fromToken: TokenInfo
     toToken: TokenInfo
-    toTokenAmount: string
-    fromTokenAmount: string
+    toAmount: string
     protocols: PathView[][][]
     tx: Tx
 }
