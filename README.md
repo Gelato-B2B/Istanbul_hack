@@ -10,3 +10,5 @@ yarn install
 ```
 yarn test
 ```
+## Sponsors
+Gnosis: https://gnosisscan.io/address/0xfd5Ea26eFE0661326d8bf75C89eACBfBc5717A5e
