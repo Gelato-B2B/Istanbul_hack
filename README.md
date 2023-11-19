@@ -14,3 +14,5 @@ yarn test
 Gnosis: https://gnosisscan.io/address/0xfd5Ea26eFE0661326d8bf75C89eACBfBc5717A5e  
 Mantle: https://explorer.mantle.xyz/address/0x5C2b029C47020c08b00E0F0884bFE1f527C684Cb  
 Polygon: https://testnet-zkevm.polygonscan.com/address/0x5C2b029C47020c08b00E0F0884bFE1f527C684Cb
+
+https://twitter.com/velvetformula/status/1726117363207008539?s=46&t=DFnJWHB_5VoJm28PtKe1wg
