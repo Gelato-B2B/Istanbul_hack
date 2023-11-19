@@ -290,8 +290,8 @@ contract intentBoost is Ownable {
         // sepoila
         // address source = 0x694AA1769357215DE4FAC081bf1f309aDC325306;
 
-        // goerli
-        address source = 0xD4a33860578De61DBAbDc8BFdb98FD742fA7028e;
+        // chainlink gnosis data chain
+        address source = 0xa767f745331D267c7751297D982b050c93985627;
 
         IChainlinkAggregator ethUsdPriceFeed = IChainlinkAggregator(source);
         int256 ethUsdPrice = ethUsdPriceFeed.latestAnswer();
